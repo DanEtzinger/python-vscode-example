@@ -1,0 +1,118 @@
+{
+  "types": {
+    "dynatrace.datasource.python:python_vscode_example-endpoint": {
+      "type": "object",
+      "displayName": "Python_vscode_example Endpoint",
+      "summaryPattern": "Python_vscode_example {url}",
+      "properties": {
+        "url": {
+          "displayName": "URL",
+          "type": "text",
+          "nullable": false,
+          "default": "",
+          "constraints": [
+            {
+              "type": "LENGTH",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          ],
+          "maxItems": 1
+        },
+        "user": {
+          "displayName": "User name",
+          "type": "text",
+          "nullable": false,
+          "default": "",
+          "constraints": [
+            {
+              "type": "LENGTH",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          ],
+          "maxItems": 1
+        },
+        "password": {
+          "displayName": "Password",
+          "type": "secret",
+          "nullable": false,
+          "default": "",
+          "constraints": [
+            {
+              "type": "LENGTH",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          ],
+          "maxItems": 1
+        }
+      }
+    },
+    "pythonRemote": {
+      "type": "object",
+      "properties": {
+        "endpoints": {
+          "displayName": "Python_vscode_example endpoint",
+          "type": "list",
+          "items": {
+            "type": {
+              "$ref": "#/types/dynatrace.datasource.python:python_vscode_example-endpoint"
+            }
+          },
+          "nullable": false,
+          "minItems": 1,
+          "maxItems": 100,
+          "metaData": {
+            "addItemButton": "Add endpoint"
+          }
+        }
+      }
+    },
+    "pythonLocal": {
+      "type": "object",
+      "properties": {
+        "endpoints": {
+          "displayName": "Python_vscode_example endpoint",
+          "type": "list",
+          "items": {
+            "type": {
+              "$ref": "#/types/dynatrace.datasource.python:python_vscode_example-endpoint"
+            }
+          },
+          "nullable": false,
+          "minItems": 1,
+          "maxItems": 100,
+          "metaData": {
+            "addItemButton": "Add endpoint"
+          }
+        }
+      }
+    }
+  },
+  "dynatrace": "1",
+  "description": "python_vscode_example configuration",
+  "schemaId": "python-extension.activation",
+  "displayName": "python_vscode_example configuration",
+  "ownerProductManagement": "dynatrace",
+  "ownerDevelopment": "dynatrace",
+  "maturity": "GENERAL_AVAILABILITY",
+  "allowedScopes": [
+    "tenant"
+  ],
+  "multiObject": false,
+  "properties": {
+    "pythonLocal": {
+      "displayName": "Python Local Extension",
+      "type": {
+        "$ref": "#/types/pythonLocal"
+      }
+    },
+    "pythonRemote": {
+      "displayName": "Python Remote Extension",
+      "type": {
+        "$ref": "#/types/pythonRemote"
+      }
+    }
+  }
+}
