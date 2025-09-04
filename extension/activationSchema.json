@@ -3,10 +3,10 @@
     "dynatrace.datasource.python:python_vscode_example-endpoint": {
       "type": "object",
       "displayName": "Python_vscode_example Endpoint",
-      "summaryPattern": "Python_vscode_example {url}",
+      "summaryPattern": "Python_vscode_example {dbname}",
       "properties": {
-        "url": {
-          "displayName": "URL",
+        "dbname": {
+          "displayName": "Database Name",
           "type": "text",
           "nullable": false,
           "default": "",
@@ -19,34 +19,22 @@
           ],
           "maxItems": 1
         },
-        "user": {
-          "displayName": "User name",
-          "type": "text",
-          "nullable": false,
-          "default": "",
+	"frequency": {
+	  "displayName": "Query Frequency",
+	  "type": "integer",
+	  "maxObjects": 1,
+	  "default": 1,
+          "metadata": {
+            "suffix": "minutes"
+          },
           "constraints": [
             {
-              "type": "LENGTH",
-              "minLength": 1,
-              "maxLength": 500
+              "type": "RANGE",
+              "minimum": 1,
+              "maximum": 10
             }
-          ],
-          "maxItems": 1
-        },
-        "password": {
-          "displayName": "Password",
-          "type": "secret",
-          "nullable": false,
-          "default": "",
-          "constraints": [
-            {
-              "type": "LENGTH",
-              "minLength": 1,
-              "maxLength": 500
-            }
-          ],
-          "maxItems": 1
-        }
+          ]
+	}
       }
     },
     "pythonRemote": {

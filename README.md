@@ -1,4 +1,4 @@
-# python_vscode_example extension
+# python-vscode-example extension
 
 ## Building and signing
 
@@ -32,3 +32,6 @@ Contains dependency and other python metadata
 ### activation.json
 
 Used during simulation only, contains the activation definition for the extension
+
+## Acknowledgements
+This extension uses the sqlite implementation of the popular Northwind sample database, to create sample data for the extension. This is sourced from the https://github.com/jpwhite3/northwind-SQLite3 repoistory which uses the MIT license.

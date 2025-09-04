@@ -6,9 +6,8 @@
 	"pythonRemote": {
 		"endpoints": [
 			{
-				"url": "http://127.0.0.1:15672",
-				"user": "guest",
-				"password": "{{myPassword}}"
+			  "dbname": "northwinds",
+			  "frequency": 1
 			}
 		]
 	}

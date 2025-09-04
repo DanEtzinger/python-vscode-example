@@ -1,6 +1,6 @@
 name: custom:python-vscode-example
-version: 0.0.1
-minDynatraceVersion: "1.285"
+version: 0.0.12
+minDynatraceVersion: "1.309"
 author:
   name: "Dynatrace"
 
@@ -15,3 +15,130 @@ python:
       path: activationSchema.json
     local:
       path: activationSchema.json
+  featureSets:
+    - featureSet: default
+      metrics:
+        - key: python_vscode.example.sqlite.rows
+metrics:
+  - key: python_vscode.example.sqlite.rows
+    metadata:
+      displayName: Example SQLite Rows
+      unit: Unspecified
+      dimensions:
+        - key: host_name
+          displayName: Hostname
+        - key: database_name
+          displayName: Database Name
+topology:
+  types:
+    - name: sqlite:database
+      enabled: true
+      displayName: SQLite Database 
+      rules:
+        - idPattern: sqlite_database_{database_name}_{host_name}
+          instanceNamePattern: SQLite Database {database_name}
+          sources:
+            - sourceType: Metrics
+              condition: $prefix(python_vscode.example.sqlite)
+          attributes:
+            - key: host_name
+              pattern: "{host_name}"
+              displayName: Host
+            - key: database_name
+              pattern: "{database_name}"  
+            - key: dt.security_context
+              displayName: Security Context
+              pattern: '{dt.security_context}' 
+screens:
+  - entityType: sqlite:database
+    actions: 
+      - actionScope: GLOBAL_LIST
+        actions: 
+          - actionExpression: hubExtension|extensionId=custom:python-vscode-example|text=configure
+            visualization:
+              iconOnly: false
+              icon: options-menu
+              displayName: Configure extension
+      - actionScope: GLOBAL_DETAILS
+        actions: 
+          - actionExpression: hubExtension|extensionId=custom:python-vscode-example|text=configure
+            visualization:
+              iconOnly: false
+              icon: options-menu
+              displayName: Configure extension
+    chartsCards:
+      - key: rows
+        mode: NORMAL
+        numberOfVisibleCharts: 1
+        charts:
+          - displayName: Chart
+            visualizationType: GRAPH_CHART
+            graphChartConfig:
+              metrics:
+                - metricSelector: python_vscode.example.sqlite.rows:splitBy()
+    listSettings:
+      staticContent:
+        showGlobalFilter: false
+        header:
+          title: SQLite Database entities
+          description: List of all entities created by the custom:python-vscode-example extension
+        hideDefaultBreadcrumb: true
+        breadcrumbs:
+          - type: NOOP
+            displayName: Extension 2.0
+          - type: NOOP
+            displayName: SQLite Databases
+      layout:
+        autoGenerate: false
+        cards:
+          - key: sqlitedatabase_list_self
+            type: ENTITIES_LIST
+          - type: INJECTIONS
+    detailsSettings:
+      staticContent:
+        showProblems: true
+        showProperties: true
+        showTags: true
+        showGlobalFilter: false
+        showAddTag: true
+        breadcrumbs:
+          - type: NOOP
+            displayName: Extension 2.0
+          - type: ENTITY_LIST_REF
+            entityType: sqlite:database
+            displayName: SQLite Databases
+      layout:
+        autoGenerate: false
+        cards: 
+          - type: INJECTIONS
+          - key: rows
+            type: CHART_GROUP                
+    entitiesListCards: 
+      - key: sqlitedatabase_list_self
+        pageSize: 15
+        displayName: List of SQLite Databases
+        displayCharts: false
+        enableDetailsExpandability: true
+        numberOfVisibleCharts: 3
+        displayIcons: true
+        hideEmptyCharts: true
+        filtering: 
+          entityFilters:
+            - displayName: Filter by
+              filters:
+                - type: entityName
+                  displayName: Name
+                  freeText: true
+                  modifier: contains
+                  defaultSearch: true
+                  distinct: false
+                  entityTypes:
+                    - sqlite:database
+        columns: []
+        charts: []
+dashboards:
+  - path: dashboards/overview_dashboard.json
+documents:
+  dashboards:
+    - displayName: VS Code Example Overview
+      path: documents/vs_code_example_overview.dashboard.json
