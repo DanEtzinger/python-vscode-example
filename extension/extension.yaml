@@ -1,6 +1,6 @@
 name: custom:python-vscode-example
-version: 0.0.12
-minDynatraceVersion: "1.309"
+version: 0.0.2
+minDynatraceVersion: 1.317.0
 author:
   name: "Dynatrace"
 
@@ -75,7 +75,7 @@ screens:
             visualizationType: GRAPH_CHART
             graphChartConfig:
               metrics:
-                - metricSelector: python_vscode.example.sqlite.rows:splitBy()
+                - metricSelector: python_vscode.example.sqlite.rows:splitBy("table")
     listSettings:
       staticContent:
         showGlobalFilter: false
@@ -140,5 +140,5 @@ dashboards:
   - path: dashboards/overview_dashboard.json
 documents:
   dashboards:
-    - displayName: VS Code Example Overview
+    - displayName: VS Code Example Python Extension Overview
       path: documents/vs_code_example_overview.dashboard.json

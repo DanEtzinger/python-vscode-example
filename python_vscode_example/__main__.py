@@ -35,7 +35,7 @@ class ExtensionImpl(Extension):
         """
         self.logger.info(f"Running scheduled_query for {db.dbname}.db at interval of every {db.frequency} minute(s)")
         try:
-          # Get the host_name to pass as a dimension
+          # Get the host_name to pass as a dimension.
           db.socket_host = socket.gethostname()
           db_dims = {
               "database_name": db.dbname,
