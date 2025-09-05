@@ -29,13 +29,13 @@ class SqliteDatabase:
             self.connection = sqlite3.connect(self.db_file)
             self.cursor = self.connection.cursor()
             self.logger.debug(f"Successful conenction to {self.dbname}.db")
-        except Exception as e:
+        except Exception:
             self.logger.error(f"Could not connect to {self.dbname}.db")
 
     def initialize_db(self):
         self.connect_db()
         self.logger.info(f"Attempting to populate {self.dbname} with data")
-        with open("./tests/create.sql", "r") as f:
+        with open("./tests/create.sql") as f:
             sql=f.read()
         try:
             self.cursor.executescript(sql)
@@ -53,7 +53,7 @@ class SqliteDatabase:
         #     self.logger.error(f"Unable to run update.sql against db: {e}")
     def report_db(self):
         self.connect_db()
-        with open("./tests/report.sql", "r") as f:
+        with open("./tests/report.sql") as f:
             sql=f.read()
         sql=sql.split("\n")
         results = []
@@ -73,7 +73,8 @@ class SqliteDatabase:
         self.connect_db()
         # ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode
         self.cursor.execute(
-              "select distinct ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, ShipCountry from [Orders]"
+              "select distinct ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, " \
+              "ShipCountry from [Orders]"
         )
         locations = [(row[0], row[1], row[2], row[3], row[4], row[5]) for row in self.cursor.fetchall()]
 
@@ -90,8 +91,10 @@ class SqliteDatabase:
         customers = [row[0] for row in self.cursor.fetchall()]
 
         # Create a bunch of new orders
-        for i in range(randint(POPULATE_MIN, POPULATE_MAX)):
-            sql = "INSERT INTO [Orders] (CustomerId, EmployeeId, OrderDate, RequiredDate, ShippedDate, ShipVia, Freight, ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, ShipCountry) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        for _i in range(randint(POPULATE_MIN, POPULATE_MAX)):
+            sql = "INSERT INTO [Orders] (CustomerId, EmployeeId, OrderDate, RequiredDate, ShippedDate,\
+                   ShipVia, Freight, ShipName, ShipAddress, ShipCity,\
+                   ShipRegion, ShipPostalCode, ShipCountry) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             location = rc(locations)
             order_date = self.random_date(
                 datetime.strptime("2012-07-10", "%Y-%m-%d"), datetime.today()
@@ -127,8 +130,9 @@ class SqliteDatabase:
         # Fill the order with items
         for order in orders:
             used = []
-            for x in range(randint(1, len(products))):
-                sql = "INSERT INTO [Order Details] (OrderId, ProductId, UnitPrice, Quantity, Discount) VALUES (?, ?, ?, ?, ?)"
+            for _x in range(randint(1, len(products))):
+                sql = "INSERT INTO [Order Details] (OrderId, ProductId, UnitPrice, Quantity, Discount)\
+                       VALUES (?, ?, ?, ?, ?)"
                 control = 1
                 while control:
                     product = rc(products)
