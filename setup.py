@@ -24,7 +24,9 @@ setup(
     author="Dynatrace",
     packages=find_packages(),
     python_requires=">=3.10",
+    package_data={"python_vscode_example":["sqlite_files/*"]},
     include_package_data=True,
     install_requires=["dt-extensions-sdk"],
     extras_require={"dev": ["dt-extensions-sdk[cli]"]},
 )
+

@@ -4,6 +4,33 @@ minDynatraceVersion: 1.317.0
 author:
   name: "Dynatrace"
 
+alertTemplates:
+  - title: "Python-VSCode-Example 700 or more rows added to Order Table"
+    description: "700 or more rows have been added in the last minute to the Order Table"
+    executionSettings:
+      queryOffset: 2
+    analyzer:
+      name: "dt.statistics.ui.anomaly_detection.StaticThresholdAnomalyDetectionAnalyzer"
+      input:
+        query: timeseries avg(python_vscode.example.sqlite.rows), by:{`dt.entity.sqlite:database`,table} | filter table == "Orders" | fieldsAdd newRows = ((`avg(python_vscode.example.sqlite.rows)`[-1]) - (`avg(python_vscode.example.sqlite.rows)`[-2]))
+        threshold: 699
+        alertCondition: ABOVE
+        alertOnMissingData: false
+        violatingSamples: 1
+    eventTemplate:
+      event.description: "700 row increase in Orders Table"
+      event.name: "Significant increase in Orders Table"
+      event.type: CUSTOM_ALERT
+      dt.source_entity: "{dims:dt.entity.sqlite:database}"
+dashboards:
+  - path: dashboards/overview_dashboard.json
+documents:
+  dashboards:
+    - displayName: VS Code Example Python Extension Overview
+      path: documents/vs_code_example_overview.dashboard.json
+alerts:
+  - path: alerts/alert-001-python-vscode-example-row-increase.json
+
 python:
   runtime:
     module: python_vscode_example
@@ -27,13 +54,36 @@ metrics:
       dimensions:
         - key: host_name
           displayName: Hostname
+        - key: ip_address
+          displayName: IP Address
         - key: database_name
           displayName: Database Name
 topology:
   types:
+    - name: sqlite:host
+      enabled: true
+      displayName: SQLite Host
+      rules:
+        - idPattern: sqlite_host_{host_name}_{ip_address}
+          instanceNamePattern: Sqlite Host {host_name}
+          sources:
+            - sourceType: Metrics
+              condition: $prefix(python_vscode.example.sqlite)
+          attributes:
+            - key: host_name
+              pattern: "{host_name}"
+              displayName: Host
+            - key: ip_address
+              pattern: "{ip_address}"
+              displayName: IP Address
+            - key: database_name
+              pattern: "{database_name}"
+            - key: dt.security_context
+              displayName: Security Context
+              pattern: '{dt.security_context}'
     - name: sqlite:database
       enabled: true
-      displayName: SQLite Database 
+      displayName: SQLite Database
       rules:
         - idPattern: sqlite_database_{database_name}_{host_name}
           instanceNamePattern: SQLite Database {database_name}
@@ -44,57 +94,60 @@ topology:
             - key: host_name
               pattern: "{host_name}"
               displayName: Host
+            - key: ip_address
+              pattern: "{ip_address}"
+              displayName: IP Address
             - key: database_name
-              pattern: "{database_name}"  
+              pattern: "{database_name}"
             - key: dt.security_context
               displayName: Security Context
-              pattern: '{dt.security_context}' 
+              pattern: '{dt.security_context}'
+  relationships:
+    - enabled: true
+      sources:
+        - sourceType: Metrics
+          condition: $prefix(python_vscode.example.sqlite)
+      fromType: sqlite:database
+      typeOfRelation: RUNS_ON
+      toType: sqlite:host
 screens:
-  - entityType: sqlite:database
-    actions: 
+  - entityType: sqlite:host
+    actions:
       - actionScope: GLOBAL_LIST
-        actions: 
+        actions:
           - actionExpression: hubExtension|extensionId=custom:python-vscode-example|text=configure
             visualization:
               iconOnly: false
               icon: options-menu
               displayName: Configure extension
       - actionScope: GLOBAL_DETAILS
-        actions: 
+        actions:
           - actionExpression: hubExtension|extensionId=custom:python-vscode-example|text=configure
             visualization:
               iconOnly: false
               icon: options-menu
               displayName: Configure extension
-    chartsCards:
-      - key: rows
-        mode: NORMAL
-        numberOfVisibleCharts: 1
-        charts:
-          - displayName: Chart
-            visualizationType: GRAPH_CHART
-            graphChartConfig:
-              metrics:
-                - metricSelector: python_vscode.example.sqlite.rows:splitBy("table")
+
     listSettings:
       staticContent:
         showGlobalFilter: false
         header:
-          title: SQLite Database entities
+          title: SQLite Host entities
           description: List of all entities created by the custom:python-vscode-example extension
         hideDefaultBreadcrumb: true
         breadcrumbs:
           - type: NOOP
-            displayName: Extension 2.0
+            displayName: Example Python Extension
           - type: NOOP
-            displayName: SQLite Databases
+            displayName: SQLite Hosts
       layout:
         autoGenerate: false
         cards:
-          - key: sqlitedatabase_list_self
+          - key: sqlitehost_list_self
             type: ENTITIES_LIST
           - type: INJECTIONS
     detailsSettings:
+      target: BOTH  #  TODO - layout will be applied to both gens.
       staticContent:
         showProblems: true
         showProperties: true
@@ -102,27 +155,51 @@ screens:
         showGlobalFilter: false
         showAddTag: true
         breadcrumbs:
-          - type: NOOP
-            displayName: Extension 2.0
           - type: ENTITY_LIST_REF
-            entityType: sqlite:database
-            displayName: SQLite Databases
+            entityType: sqlite:host
+            displayName: SQLite Hosts
       layout:
         autoGenerate: false
-        cards: 
+        cards:
+          - key: sqlitehost_list_sqlitedatabase
+            type: ENTITIES_LIST
           - type: INJECTIONS
-          - key: rows
-            type: CHART_GROUP                
-    entitiesListCards: 
-      - key: sqlitedatabase_list_self
+    # chartsCards: 
+          - key: sqlitehost_list_sqlitedatabase_dql
+            type: DQL_TABLE
+    entitiesListCards:
+      - key: sqlitehost_list_self
         pageSize: 15
-        displayName: List of SQLite Databases
+        displayName: List of SQLite Hosts
         displayCharts: false
         enableDetailsExpandability: true
         numberOfVisibleCharts: 3
         displayIcons: true
         hideEmptyCharts: true
-        filtering: 
+        filtering:
+          entityFilters:
+            - displayName: Filter by
+              filters:
+                - type: entityName
+                  displayName: Name
+                  freeText: true
+                  modifier: contains
+                  defaultSearch: true
+                  distinct: false
+                  entityTypes:
+                    - sqlite:host
+        columns: []
+        charts: []
+      - key: sqlitehost_list_sqlitedatabase
+        pageSize: 5
+        displayName: SQLite Databases running on this Host
+        displayCharts: false
+        enableDetailsExpandability: true
+        numberOfVisibleCharts: 3
+        displayIcons: true
+        entitySelectorTemplate: type(sqlite:database),fromRelationships.runsOn($(entityConditions))
+        hideEmptyCharts: true
+        filtering:
           entityFilters:
             - displayName: Filter by
               filters:
@@ -136,9 +213,127 @@ screens:
                     - sqlite:database
         columns: []
         charts: []
-dashboards:
-  - path: dashboards/overview_dashboard.json
-documents:
-  dashboards:
-    - displayName: VS Code Example Python Extension Overview
-      path: documents/vs_code_example_overview.dashboard.json
+    dqlTableCards:
+      - key: sqlitehost_list_sqlitedatabase_dql
+        displayName: SQLite Databases running on this Host
+        query:
+          query: |-
+            fetch `dt.entity.sqlite:database`
+            | filter in (id, classicEntitySelector("type(sqlite:database),fromRelationships.runsOn(type(sqlite:host),entityId($(unquotedEntityId)))"))
+            | fieldsAdd `sqlite:database.id` = id, database.record = record(entityId=id, displayName=entity.name, dim="dt.entity.sqlite:database")
+          lookups: []
+        columns:
+          - field: database.record
+            displayName: SQLite Databases running on this Host Name
+            columnType: TEXT
+            widthType: AUTO
+            defaultColumn: false
+            resizable: true
+            sortable: true
+  - entityType: sqlite:database
+    actions:
+      - actionScope: GLOBAL_LIST
+        actions:
+          - actionExpression: hubExtension|extensionId=custom:python-vscode-example|text=configure
+            visualization:
+              iconOnly: false
+              icon: options-menu
+              displayName: Configure extension
+      - actionScope: GLOBAL_DETAILS
+        actions:
+          - actionExpression: hubExtension|extensionId=custom:python-vscode-example|text=configure
+            visualization:
+              iconOnly: false
+              icon: options-menu
+              displayName: Configure extension
+
+    listSettings:
+      staticContent:
+        showGlobalFilter: false
+        header:
+          title: SQLite Database entities
+          description: List of all entities created by the custom:python-vscode-example extension
+        hideDefaultBreadcrumb: true
+        breadcrumbs:
+          - type: NOOP
+            displayName: Example Python Extension
+          - type: NOOP
+            displayName: SQLite Databases
+      layout:
+        autoGenerate: false
+        cards:
+          - key: sqlitedatabase_list_self
+            type: ENTITIES_LIST
+          - type: INJECTIONS
+    detailsSettings:
+      target: BOTH  #  TODO - layout will be applied to both gens.
+      staticContent:
+        showProblems: true
+        showProperties: true
+        showTags: true
+        showGlobalFilter: false
+        showAddTag: true
+        breadcrumbs:
+          - entityType: sqlite:host
+            type: ENTITY_LIST_REF
+            displayName: SQLite hosts
+          - entitySelectorTemplate: type(sqlite:host),toRelationships.runsOn($(entityConditions))
+            type: ENTITY_REF
+          - type: PLATFORM_ENTITY
+            dqlField: host.relation_record
+        breadcrumbsDqlQuery:
+          query: |-
+            data record(key= "sourcekey", value=1)
+          lookups:
+            - query: |-
+                fetch `dt.entity.sqlite:host`
+                | filter in (id, classicEntitySelector("type(sqlite:host),toRelationships.runsOn(type(sqlite:database),entityId($(unquotedEntityId)))"))
+                | fields host.relation_record = record(entityId = id, displayName = entity.name), lookupkey=1
+              sourceField: value
+              lookupField: lookupkey
+              fields:
+                - host.relation_record
+      layout:
+        autoGenerate: false
+        cards:
+          - type: INJECTIONS
+          - key: rows
+            type: CHART_GROUP
+    chartsCards:
+      - key: rows
+        target: BOTH
+        mode: NORMAL
+        displayName: Row count by Table
+        numberOfVisibleCharts: 1
+        charts:
+          - displayName: Row Count
+            visualizationType: GRAPH_CHART
+            graphChartConfig:
+              metrics:
+                - metricSelector: python_vscode.example.sqlite.rows:splitBy("table")
+
+                  dqlQuery: |-
+                    timeseries rows=avg(python_vscode.example.sqlite.rows),by: {table , `dt.entity.sqlite:database`},filter:{`dt.entity.sqlite:database`==$(entityId)}
+    entitiesListCards:
+      - key: sqlitedatabase_list_self
+        pageSize: 15
+        displayName: List of SQLite Databases
+        displayCharts: false
+        enableDetailsExpandability: true
+        numberOfVisibleCharts: 3
+        displayIcons: true
+        hideEmptyCharts: true
+        filtering:
+          entityFilters:
+            - displayName: Filter by
+              filters:
+                - type: entityName
+                  displayName: Name
+                  freeText: true
+                  modifier: contains
+                  defaultSearch: true
+                  distinct: false
+                  entityTypes:
+                    - sqlite:database
+        columns: []
+        charts: []

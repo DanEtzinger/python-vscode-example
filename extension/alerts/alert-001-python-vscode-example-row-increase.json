@@ -1,0 +1,28 @@
+    {
+    "id": "64ff4f76-6650-34cd-ad04-c0d7361006c6",
+    "metricSelector": "(python_vscode.example.sqlite.rows:filter(and(or(eq(table,Orders)))):splitBy(\"dt.entity.sqlite:database\",table):sort(value(auto,descending)):timeshift(-2m)) \n-(python_vscode.example.sqlite.rows:filter(and(or(eq(table,Orders)))):splitBy(\"dt.entity.sqlite:database\",table):sort(value(auto,descending)):timeshift(-3m))",
+    "name": "Python-VSCode-Example 700 or more rows added to Orders Table",
+    "description": "The {metricname} value was {alert_condition} normal behavior.",
+    "severity": "CUSTOM_ALERT",
+    "enabled": false,
+    "disabledReason": "NONE",
+    "warningReason": "NONE",
+    "monitoringStrategy": {
+        "type": "STATIC_THRESHOLD",
+        "samples": 5,
+        "violatingSamples": 1,
+        "dealertingSamples": 5,
+        "alertCondition": "ABOVE",
+        "alertingOnMissingData": false,
+        "threshold": 699.0,
+        "unit": "UNSPECIFIED"
+    },
+    "primaryDimensionKey": "dt.entity.sqlite:database",
+    "alertCondition": "ABOVE",
+    "samples": 5,
+    "violatingSamples": 1,
+    "dealertingSamples": 5,
+    "threshold": 699.0,
+    "unit": "UNSPECIFIED",
+    "eventType": "CUSTOM_ALERT"
+}

@@ -23,6 +23,7 @@
         "height": 76
       },
       "tileFilter": {},
+      "isAutoRefreshDisabled": false,
       "markdown": "# Extension Monitoring Overview\n***"
     },
     {
@@ -50,6 +51,7 @@
         "height": 38
       },
       "tileFilter": {},
+      "isAutoRefreshDisabled": false,
       "markdown": "## Currently monitoring\n"
     },
     {
@@ -64,19 +66,21 @@
         "height": 76
       },
       "tileFilter": {},
-      "markdown": "## ⚙️ [Configure extension](/ui/hub/ext/custom:python-vscode-example)\n## 🔗 Navigate to entities: [SQLite Database](ui/entity/list/sqlite:database)"
+      "isAutoRefreshDisabled": false,
+      "markdown": "## ⚙️ [Configure extension](/ui/hub/ext/custom:python-vscode-example)\n## 🔗 Navigate to entities: [SQLite Host](ui/entity/list/sqlite:host) | [SQLite Database](ui/entity/list/sqlite:database)"
     },
     {
       "name": "Title SQLite Database",
       "tileType": "MARKDOWN",
       "configured": true,
       "bounds": {
-        "top": 380,
+        "top": 342,
         "left": 0,
         "width": 1406,
         "height": 38
       },
       "tileFilter": {},
+      "isAutoRefreshDisabled": false,
       "markdown": "## SQLite Database"
     },
     {
@@ -85,17 +89,20 @@
       "configured": true,
       "bounds": {
         "top": 190,
-        "left": 0,
+        "left": 152,
         "width": 152,
         "height": 152
       },
       "tileFilter": {},
+      "isAutoRefreshDisabled": false,
       "customName": "Single value",
       "queries": [
         {
           "id": "A",
+          "spaceAggregation": "AUTO",
           "timeAggregation": "DEFAULT",
           "metricSelector": "python_vscode.example.sqlite.rows:splitBy(\"dt.entity.sqlite:database\"):auto:splitBy():count",
+          "rate": "NONE",
           "enabled": true
         }
       ],
@@ -124,12 +131,16 @@
               "min": "AUTO",
               "max": "AUTO",
               "position": "LEFT",
-              "queryIds": [ "A" ],
+              "queryIds": [
+                "A"
+              ],
               "defaultAxis": true
             }
           ]
         },
-        "heatmapSettings": {},
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
         "singleValueSettings": {
           "showSparkLine": false
         },
@@ -137,31 +148,47 @@
           {
             "axisTarget": "LEFT",
             "rules": [
-              { "color": "#7dc540" },
-              { "color": "#f5d30f" },
-              { "color": "#dc172a" }
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
             ],
             "visible": true
           }
         ],
-        "tableSettings": {},
+        "tableSettings": {
+          "hiddenColumns": []
+        },
         "graphChartSettings": {
           "connectNulls": false
         },
-        "honeycombSettings": {}
-      }
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "metricExpressions": [
+        "resolution=Inf&(python_vscode.example.sqlite.rows:splitBy(\"dt.entity.sqlite:database\"):auto:splitBy():count):limit(100):names"
+      ]
     },
     {
       "name": "Example SQLite Rows",
       "tileType": "DATA_EXPLORER",
       "configured": true,
       "bounds": {
-        "top": 418,
+        "top": 380,
         "left": 570,
         "width": 418,
         "height": 266
       },
       "tileFilter": {},
+      "isAutoRefreshDisabled": false,
       "customName": "Data explorer results",
       "queries": [
         {
@@ -169,7 +196,10 @@
           "metric": "python_vscode.example.sqlite.rows",
           "spaceAggregation": "AVG",
           "timeAggregation": "DEFAULT",
-          "splitBy": ["dt.entity.sqlite:database"],
+          "splitBy": [
+            "dt.entity.sqlite:database"
+          ],
+          "rate": "NONE",
           "enabled": true
         }
       ],
@@ -179,50 +209,172 @@
         "rules": [
           {
             "matcher": "A:",
-            "properties": {"color": "DEFAULT"},
+            "properties": {
+              "color": "DEFAULT"
+            },
             "seriesOverrides": []
           }
         ],
         "axes": {
-          "xAxis": {"visible": true},
+          "xAxis": {
+            "visible": true
+          },
           "yAxes": []
         },
-        "heatmapSettings": {},
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
         "thresholds": [
           {
             "axisTarget": "LEFT",
             "rules": [
-              {"color": "#7dc540"},
-              {"color": "#f5d30f"},
-              {"color": "#dc172a"}
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
             ],
             "visible": true
           }
         ],
-        "tableSettings": {},
-        "graphChartSettings": {"connectNulls": false},
-        "honeycombSettings": {}
-      }
+        "tableSettings": {
+          "hiddenColumns": []
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "metricExpressions": [
+        "resolution=null&(python_vscode.example.sqlite.rows:splitBy(\"dt.entity.sqlite:database\"):avg:sort(value(avg,descending)):limit(20)):limit(100):names"
+      ]
+    },
+    {
+      "name": "SQLite Host",
+      "tileType": "DATA_EXPLORER",
+      "configured": true,
+      "bounds": {
+        "top": 190,
+        "left": 0,
+        "width": 152,
+        "height": 152
+      },
+      "tileFilter": {},
+      "isAutoRefreshDisabled": false,
+      "customName": "Single value",
+      "queries": [
+        {
+          "id": "A",
+          "spaceAggregation": "AUTO",
+          "timeAggregation": "DEFAULT",
+          "splitBy": [],
+          "metricSelector": "python_vscode.example.sqlite.rows:splitBy(\"dt.entity.sqlite:host\"):auto:splitBy():count",
+          "rate": "NONE",
+          "enabled": true
+        }
+      ],
+      "visualConfig": {
+        "type": "SINGLE_VALUE",
+        "global": {},
+        "rules": [
+          {
+            "matcher": "A:",
+            "properties": {
+              "color": "DEFAULT",
+              "seriesType": "COLUMN"
+            },
+            "seriesOverrides": []
+          }
+        ],
+        "axes": {
+          "xAxis": {
+            "visible": true
+          },
+          "yAxes": []
+        },
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
+        "singleValueSettings": {
+          "showTrend": false,
+          "showSparkLine": false,
+          "linkTileColorToThreshold": false
+        },
+        "thresholds": [
+          {
+            "axisTarget": "LEFT",
+            "rules": [
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
+            ],
+            "visible": true
+          }
+        ],
+        "tableSettings": {
+          "hiddenColumns": []
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=Inf&(python_vscode.example.sqlite.rows:splitBy(\"dt.entity.sqlite:host\"):auto:splitBy():count):limit(100):names"
+      ]
     },
     {
       "name": "SQLite Database",
       "tileType": "DATA_EXPLORER",
       "configured": true,
       "bounds": {
-        "top": 418,
+        "top": 380,
         "left": 0,
         "width": 570,
         "height": 266
       },
       "tileFilter": {},
+      "isAutoRefreshDisabled": false,
       "customName": "Table",
       "queries": [
-                {
+        {
           "id": "A",
           "metric": "python_vscode.example.sqlite.rows",
           "spaceAggregation": "AVG",
           "timeAggregation": "DEFAULT",
-          "splitBy": [ "dt.entity.sqlite:database" ],
+          "splitBy": [
+            "dt.entity.sqlite:database",
+            "dt.entity.sqlite:host"
+          ],
+          "sortBy": "DESC",
+          "sortByDimension": "",
+          "filterBy": {
+            "nestedFilters": [],
+            "criteria": []
+          },
+          "limit": 20,
+          "rate": "NONE",
           "enabled": true
         }
       ],
@@ -232,30 +384,61 @@
         "rules": [
           {
             "matcher": "A:",
-            "properties": {"color": "DEFAULT"},
+            "properties": {
+              "color": "DEFAULT"
+            },
             "seriesOverrides": []
           }
         ],
         "axes": {
-          "xAxis": {"visible": true},
+          "xAxis": {
+            "visible": true
+          },
           "yAxes": []
         },
-        "heatmapSettings": {},
+        "heatmapSettings": {
+          "yAxis": "VALUE"
+        },
         "thresholds": [
           {
             "axisTarget": "LEFT",
+            "columnId": "Example SQLite Rows",
             "rules": [
-              {"color": "#7dc540"},
-              {"color": "#f5d30f"},
-              {"color": "#dc172a"}
+              {
+                "color": "#7dc540"
+              },
+              {
+                "color": "#f5d30f"
+              },
+              {
+                "color": "#dc172a"
+              }
             ],
+            "queryId": "A",
             "visible": true
           }
         ],
-        "tableSettings": {},
-        "graphChartSettings": {"connectNulls": false},
-        "honeycombSettings": {}
-      }
+        "tableSettings": {
+          "hiddenColumns": [
+            "A:dt.entity.sqlite:database.name",
+            "A:dt.entity.sqlite:host.name"
+          ]
+        },
+        "graphChartSettings": {
+          "connectNulls": false
+        },
+        "honeycombSettings": {
+          "showHive": true,
+          "showLegend": true,
+          "showLabels": false
+        }
+      },
+      "queriesSettings": {
+        "resolution": ""
+      },
+      "metricExpressions": [
+        "resolution=Inf&(python_vscode.example.sqlite.rows:splitBy(\"dt.entity.sqlite:database\",\"dt.entity.sqlite:host\"):avg:sort(value(avg,descending)):limit(20)):names"
+      ]
     }
   ]
 }

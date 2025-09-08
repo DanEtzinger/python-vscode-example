@@ -1,3 +1,4 @@
+import shutil
 import sqlite3
 import tempfile
 from datetime import datetime, timedelta
@@ -7,6 +8,7 @@ from random import randint
 
 POPULATE_MIN=500
 POPULATE_MAX=1000
+LIB_DIR = Path(__file__).parent.resolve()
 
 class SqliteDatabase:
     def __init__(self, logger, dbname: str):
@@ -33,33 +35,20 @@ class SqliteDatabase:
             self.logger.error(f"Could not connect to {self.dbname}.db")
 
     def initialize_db(self):
-        self.connect_db()
-        self.logger.info(f"Attempting to populate {self.dbname} with data")
-        with open("./tests/create.sql") as f:
-            sql=f.read()
-        try:
-            self.cursor.executescript(sql)
-            self.connection.commit()
-            self.connection.close()
-        except Exception as e:
-            self.logger.error(f"Unable to run create.sql against db: {e}")
-        # with open("./tests/update.sql", "r")as f:
-        #     sql=f.read()
-        # try:
-        #     self.cursor.executescript(sql)
-        #     self.connection()
-        #     self.connection.close()
-        # except Exception as e:
-        #     self.logger.error(f"Unable to run update.sql against db: {e}")
+        self.logger.info(f"Copying initial db data to {self.dbname}")
+        source_db_path = Path(f"{LIB_DIR}/sqlite_files/test.db")
+        shutil.copyfile(str(source_db_path), str(self.db_file))
     def report_db(self):
         self.connect_db()
-        with open("./tests/report.sql") as f:
-            sql=f.read()
+        try:
+            with open(Path(f"{LIB_DIR}/sqlite_files/report.sql")) as f:
+                sql=f.read()
+        except Exception as e:
+            self.logger.error(f"Could not open/read report.sql: {e}")
         sql=sql.split("\n")
         results = []
         for line in sql:
             self.cursor.execute(line)
-            # self.logger.info(self.cursor.fetchall())
             results.append(self.cursor.fetchall())
         self.connection.commit()
         self.connection.close()

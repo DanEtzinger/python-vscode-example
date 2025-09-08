@@ -1,5 +1,6 @@
 import socket
 from datetime import timedelta
+from pathlib import Path
 
 from dynatrace_extension import Extension, MetricType, Status, StatusValue
 
@@ -18,6 +19,7 @@ class ExtensionImpl(Extension):
                 # These next few lines are specific to the setup of the SQLite database
                 # Set the user-entered 'dbname'
                 # from the monitoring config in `extension/activationSchema.json`
+                self.logger.info("Initializing Extension...")
                 dbname = endpoint["dbname"]
                 db = SqliteDatabase(self.logger, dbname)
                 db.create_db_file()
@@ -28,10 +30,10 @@ class ExtensionImpl(Extension):
                 # In this case, its using the user-specified frequency, and will call the
                 # `scheduled_query` method
                 self.schedule(self.scheduled_query, timedelta(minutes=endpoint["frequency"]), (db,))
-            except Exception:
-                self.logger.warning(f"Could not connect to {dbname}")
+            except Exception as e:
+                self.logger.warning(f"Could not connect to {dbname}: {e}")
 
-    def scheduled_query(self, db):
+    def scheduled_query(self, db: SqliteDatabase):
         """
         This is the method that is scheduled to run, using the frequency set in the monitoring configuration.
         """
@@ -41,8 +43,10 @@ class ExtensionImpl(Extension):
         try:
             # Get the host_name to pass as a dimension.
             db.socket_host = socket.gethostname()
-            db_dims = {"database_name": db.dbname, "host_name": db.socket_host}
+            db.socket_ip = socket.gethostbyname(db.socket_host)
+            db_dims = {"database_name": db.dbname, "host_name": db.socket_host, "ip_address": db.socket_ip}
             report = db.report_db()
+            self.logger.info(f"Dims: {db_dims}")
             self.logger.info(f"Report: {report}")
             rows = 0
             for result in report:
@@ -75,11 +79,20 @@ class ExtensionImpl(Extension):
         test_db = SqliteDatabase(self.logger, "test")
         test_db.create_db_file()
         if test_db.db_file is not None:
-            self.logger.info(f"Test db location is: {test_db.db_file}")
+            self.logger.info("Test db file created.")
             # Return an OK status to Dynatrace.
-            return Status(StatusValue.OK, "Fastcheck to test db successful.")
-        # Return an ERROR status to Dynatrace.
-        return Status(StatusValue.DEVICE_CONNECTION_ERROR, "Fastcheck to test db unsuccessful")
+            # return Status(StatusValue.OK, "Fastcheck to test db successful.")
+            try:
+                self.logger.info("Attempting to read report.sql")
+                with open(Path(f"{Path(__file__).parent.resolve()}/sqlite_files/report.sql")) as f:
+                    f.read()
+                return Status(StatusValue.OK, "Able to create test db file and read from report.sql.")
+            except Exception as e:
+                self.logger.warning(f"Could not read from report.sql: {e}")
+                # Return an ERROR status to Dynatrace.
+                return Status(StatusValue.DEVICE_CONNECTION_ERROR, "Unable to read report.sql")
+        else:
+            return Status(StatusValue.DEVICE_CONNECTION_ERROR, "Fastcheck to test db unsuccessful")
 
 
 def main():
