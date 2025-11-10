@@ -1,9 +1,45 @@
+#                                Example Extension - Python
+# ==================================================================================================
+# Repositories for each data source can be found in the following lines:
+# ==================================================================================================
+# JDBC   https://github.com/dynatrace-extensions/jdbc-vscode-example
+# SQL    https://github.com/dynatrace-extensions/sql-vscode-example
+# JMX    https://github.com/dynatrace-extensions/jmx-vscode-example
+# SNMP   https://github.com/dynatrace-extensions/snmp-vscode-example
+# PYTHON https://github.com/dynatrace-extensions/python-vscode-example 
+# WMI    https://github.com/dynatrace-extensions/wmi-vscode-example
+# ==================================================================================================
+# Dynatrace documentation for each data source can be found in the following lines:
+# ==================================================================================================
+# JDBC/SQL https://docs.dynatrace.com/docs/shortlink/sql-reference
+# JMX      https://docs.dynatrace.com/docs/shortlink/jmx-extensions-reference
+# SNMP     https://docs.dynatrace.com/docs/shortlink/snmp-extensions-reference
+# PYTHON   https://dt-url.net/7g638yh
+# WMI      https://docs.dynatrace.com/docs/shortlink/wmi-extensions-reference
+# ==================================================================================================
+# For general extesnion yaml guidance, check out:
+#
+# https://docs.dynatrace.com/docs/shortlink/extension-yaml
+# ==================================================================================================
+# Purpose:
+#
+# These example extensions exist to provide minimal examples of how to ingest
+# data for each data source. They are not meant to be comprehensive, but rather
+# provide a useful starting point to creating custom extensions.
+#
+# In this specific example for the python data source, there a few more nodes added in the yaml that
+# demonstrate how to add alerting templates, and dashboards.
+# ==================================================================================================
+# NOTE: For best results, work with these examples using the VS Code Dynatrace Extensions Add-On.
+# https://marketplace.visualstudio.com/items?itemName=DynatracePlatformExtensions.dynatrace-extensions
+# ==================================================================================================
 name: custom:python-vscode-example
 version: 0.0.1
-minDynatraceVersion: 1.317.0
+minDynatraceVersion: 1.318.0
 author:
   name: "Dynatrace"
 
+# This is where Davis Anomaly Detetctor alert templates can be defined: https://docs.dynatrace.com/docs/shortlink/extensions-alerting
 alertTemplates:
   - title: "Python-VSCode-Example 700 or more rows added to Order Table"
     description: "700 or more rows have been added in the last minute to the Order Table"
@@ -22,32 +58,21 @@ alertTemplates:
       event.name: "Significant increase in Orders Table"
       event.type: CUSTOM_ALERT
       dt.source_entity: "{dims:dt.entity.sqlite:database}"
+# Dashboards for Classic Dynatrace are defined here.    
 dashboards:
   - path: dashboards/overview_dashboard.json
+# New Dynatrace Dashboards are defined here.  
 documents:
   dashboards:
     - displayName: VS Code Example Python Extension Overview
       path: documents/vs_code_example_overview.dashboard.json
 alerts:
   - path: alerts/alert-001-python-vscode-example-row-increase.json
-
-python:
-  runtime:
-    module: python_vscode_example
-    version:
-      min: "3.10"
-
-  activation:
-    remote:
-      path: activationSchema.json
-    local:
-      path: activationSchema.json
-  featureSets:
-    - featureSet: default
-      metrics:
-        - key: python_vscode.example.sqlite.rows
+    
+# Its a good practice to name metric keys with a prefix that relates to the extension's name/function
 metrics:
   - key: python_vscode.example.sqlite.rows
+    # While not required, metadata is useful for viewing metric descriptions in the UI, and allows for intelligent formatting of units in DQL Tables or dashboard charts for example.    
     metadata:
       displayName: Example SQLite Rows
       unit: Unspecified
@@ -58,19 +83,48 @@ metrics:
           displayName: IP Address
         - key: database_name
           displayName: Database Name
+          
+# Python data source specific information is located here.
+python:
+  runtime:
+    module: python_vscode_example
+    version:
+      min: "3.10"
+# Specifying both remote and local activation means that the extension can run on either an ActiveGate or a OneAgent.
+  activation:
+    remote:
+      path: activationSchema.json
+    local:
+      path: activationSchema.json
+  featureSets:
+    - featureSet: default
+      metrics:
+        - key: python_vscode.example.sqlite.rows
+
+# Defining topology allows generic entities to be created.          
+# Note that this is not required, and is only included for provide an example
 topology:
   types:
     - name: sqlite:host
       enabled: true
       displayName: SQLite Host
       rules:
+        # The idPattern is what makes the specific entity unique.
+        # Its important that there is some value that makes this unique. In this case,
+        # its the `sqlite_host_` section, as its very possible another extension on this same host
+        # uses generic topology with the `host_name` and `ip_address` dimensions.
         - idPattern: sqlite_host_{host_name}_{ip_address}
+        # The instanceNamePattern defines how the entities' name will actually display in Dynatrace.
           instanceNamePattern: Sqlite Host {host_name}
+          # Since the topology is formed from certain dimensions,
+          # this section defines which metrics contain the dimensions that will be used for the generic topology
           sources:
             - sourceType: Metrics
               condition: $prefix(python_vscode.example.sqlite)
           attributes:
             - key: host_name
+              # The `pattern` is simply a dimension enclosed in "{}".
+              # The `key` is just a field that refers to the defined pattern
               pattern: "{host_name}"
               displayName: Host
             - key: ip_address
@@ -102,238 +156,15 @@ topology:
             - key: dt.security_context
               displayName: Security Context
               pattern: '{dt.security_context}'
+  # Relationships define how topology is related to each other.
   relationships:
     - enabled: true
       sources:
         - sourceType: Metrics
+          # The condition states that the metrics meeting this condition must exist in Dynatrace
+          # before trying to create the relationship.
           condition: $prefix(python_vscode.example.sqlite)
       fromType: sqlite:database
+      # The different types of relationships can be listed by using the 'auto-fill' functionality of the Dynatrace Extensions VS Code Add-On.
       typeOfRelation: RUNS_ON
       toType: sqlite:host
-screens:
-  - entityType: sqlite:host
-    actions:
-      - actionScope: GLOBAL_LIST
-        actions:
-          - actionExpression: hubExtension|extensionId=custom:python-vscode-example|text=configure
-            visualization:
-              iconOnly: false
-              icon: options-menu
-              displayName: Configure extension
-      - actionScope: GLOBAL_DETAILS
-        actions:
-          - actionExpression: hubExtension|extensionId=custom:python-vscode-example|text=configure
-            visualization:
-              iconOnly: false
-              icon: options-menu
-              displayName: Configure extension
-
-    listSettings:
-      staticContent:
-        showGlobalFilter: false
-        header:
-          title: SQLite Host entities
-          description: List of all entities created by the custom:python-vscode-example extension
-        hideDefaultBreadcrumb: true
-        breadcrumbs:
-          - type: NOOP
-            displayName: Example Python Extension
-          - type: NOOP
-            displayName: SQLite Hosts
-      layout:
-        autoGenerate: false
-        cards:
-          - key: sqlitehost_list_self
-            type: ENTITIES_LIST
-          - type: INJECTIONS
-    detailsSettings:
-      target: BOTH  #  TODO - layout will be applied to both gens.
-      staticContent:
-        showProblems: true
-        showProperties: true
-        showTags: true
-        showGlobalFilter: false
-        showAddTag: true
-        breadcrumbs:
-          - type: ENTITY_LIST_REF
-            entityType: sqlite:host
-            displayName: SQLite Hosts
-      layout:
-        autoGenerate: false
-        cards:
-          - key: sqlitehost_list_sqlitedatabase
-            type: ENTITIES_LIST
-          - type: INJECTIONS
-    # chartsCards: 
-          - key: sqlitehost_list_sqlitedatabase_dql
-            type: DQL_TABLE
-    entitiesListCards:
-      - key: sqlitehost_list_self
-        pageSize: 15
-        displayName: List of SQLite Hosts
-        displayCharts: false
-        enableDetailsExpandability: true
-        numberOfVisibleCharts: 3
-        displayIcons: true
-        hideEmptyCharts: true
-        filtering:
-          entityFilters:
-            - displayName: Filter by
-              filters:
-                - type: entityName
-                  displayName: Name
-                  freeText: true
-                  modifier: contains
-                  defaultSearch: true
-                  distinct: false
-                  entityTypes:
-                    - sqlite:host
-        columns: []
-        charts: []
-      - key: sqlitehost_list_sqlitedatabase
-        pageSize: 5
-        displayName: SQLite Databases running on this Host
-        displayCharts: false
-        enableDetailsExpandability: true
-        numberOfVisibleCharts: 3
-        displayIcons: true
-        entitySelectorTemplate: type(sqlite:database),fromRelationships.runsOn($(entityConditions))
-        hideEmptyCharts: true
-        filtering:
-          entityFilters:
-            - displayName: Filter by
-              filters:
-                - type: entityName
-                  displayName: Name
-                  freeText: true
-                  modifier: contains
-                  defaultSearch: true
-                  distinct: false
-                  entityTypes:
-                    - sqlite:database
-        columns: []
-        charts: []
-    dqlTableCards:
-      - key: sqlitehost_list_sqlitedatabase_dql
-        displayName: SQLite Databases running on this Host
-        query:
-          query: |-
-            fetch `dt.entity.sqlite:database`
-            | filter in (id, classicEntitySelector("type(sqlite:database),fromRelationships.runsOn(type(sqlite:host),entityId($(unquotedEntityId)))"))
-            | fieldsAdd `sqlite:database.id` = id, database.record = record(entityId=id, displayName=entity.name, dim="dt.entity.sqlite:database")
-          lookups: []
-        columns:
-          - field: database.record
-            displayName: SQLite Databases running on this Host Name
-            columnType: TEXT
-            widthType: AUTO
-            defaultColumn: false
-            resizable: true
-            sortable: true
-  - entityType: sqlite:database
-    actions:
-      - actionScope: GLOBAL_LIST
-        actions:
-          - actionExpression: hubExtension|extensionId=custom:python-vscode-example|text=configure
-            visualization:
-              iconOnly: false
-              icon: options-menu
-              displayName: Configure extension
-      - actionScope: GLOBAL_DETAILS
-        actions:
-          - actionExpression: hubExtension|extensionId=custom:python-vscode-example|text=configure
-            visualization:
-              iconOnly: false
-              icon: options-menu
-              displayName: Configure extension
-
-    listSettings:
-      staticContent:
-        showGlobalFilter: false
-        header:
-          title: SQLite Database entities
-          description: List of all entities created by the custom:python-vscode-example extension
-        hideDefaultBreadcrumb: true
-        breadcrumbs:
-          - type: NOOP
-            displayName: Example Python Extension
-          - type: NOOP
-            displayName: SQLite Databases
-      layout:
-        autoGenerate: false
-        cards:
-          - key: sqlitedatabase_list_self
-            type: ENTITIES_LIST
-          - type: INJECTIONS
-    detailsSettings:
-      target: BOTH  #  TODO - layout will be applied to both gens.
-      staticContent:
-        showProblems: true
-        showProperties: true
-        showTags: true
-        showGlobalFilter: false
-        showAddTag: true
-        breadcrumbs:
-          - entityType: sqlite:host
-            type: ENTITY_LIST_REF
-            displayName: SQLite hosts
-          - entitySelectorTemplate: type(sqlite:host),toRelationships.runsOn($(entityConditions))
-            type: ENTITY_REF
-          - type: PLATFORM_ENTITY
-            dqlField: host.relation_record
-        breadcrumbsDqlQuery:
-          query: |-
-            data record(key= "sourcekey", value=1)
-          lookups:
-            - query: |-
-                fetch `dt.entity.sqlite:host`
-                | filter in (id, classicEntitySelector("type(sqlite:host),toRelationships.runsOn(type(sqlite:database),entityId($(unquotedEntityId)))"))
-                | fields host.relation_record = record(entityId = id, displayName = entity.name), lookupkey=1
-              sourceField: value
-              lookupField: lookupkey
-              fields:
-                - host.relation_record
-      layout:
-        autoGenerate: false
-        cards:
-          - type: INJECTIONS
-          - key: rows
-            type: CHART_GROUP
-    chartsCards:
-      - key: rows
-        target: BOTH
-        mode: NORMAL
-        displayName: Row count by Table
-        numberOfVisibleCharts: 1
-        charts:
-          - displayName: Row Count
-            visualizationType: GRAPH_CHART
-            graphChartConfig:
-              metrics:
-                - metricSelector: python_vscode.example.sqlite.rows:splitBy("table")
-
-                  dqlQuery: |-
-                    timeseries rows=avg(python_vscode.example.sqlite.rows),by: {table , `dt.entity.sqlite:database`},filter:{`dt.entity.sqlite:database`==$(entityId)}
-    entitiesListCards:
-      - key: sqlitedatabase_list_self
-        pageSize: 15
-        displayName: List of SQLite Databases
-        displayCharts: false
-        enableDetailsExpandability: true
-        numberOfVisibleCharts: 3
-        displayIcons: true
-        hideEmptyCharts: true
-        filtering:
-          entityFilters:
-            - displayName: Filter by
-              filters:
-                - type: entityName
-                  displayName: Name
-                  freeText: true
-                  modifier: contains
-                  defaultSearch: true
-                  distinct: false
-                  entityTypes:
-                    - sqlite:database
-        columns: []
-        charts: []
