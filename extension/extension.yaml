@@ -1,6 +1,6 @@
 name: custom:python-vscode-example
 version: 0.0.1
-minDynatraceVersion: 1.317.0
+minDynatraceVersion: 1.333.0
 author:
   name: "Dynatrace"
 
